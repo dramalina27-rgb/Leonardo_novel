@@ -110,7 +110,7 @@ button{font-family:inherit;cursor:pointer}
 .tbtn.ico svg{display:block}
 .tbtn.ico.snd-off{opacity:.5}
 /* над настоящей (встроенной) иллюстрацией прячем эмодзи-заглушки; тексты остаются */
-.scene.img-real .motif,.scene.img-real .extra,.lb-scene.img-real .mini{display:none}
+.scene.img-real .motif,.scene.img-real .extra,.lb-scene.img-real .mini,.lady-card.img-real .mini{display:none}
 .scene.img-real .glow{opacity:.4}
 .daygroup{display:flex;align-items:center;gap:8px}
 .daygroup .home-left{flex:none}
@@ -272,6 +272,11 @@ button{font-family:inherit;cursor:pointer}
 .gs.todo{background:rgba(255,255,255,.4);color:var(--ink-soft);border:1px solid #cdb07a}
 .gs.lost{background:#5a201d;color:#f0c9c5;border:1px solid #9b2f2a}
 .modal .close{margin-top:16px}
+.re-portrait{position:relative;aspect-ratio:3/4;max-width:280px;margin:8px auto 4px;border-radius:9px;overflow:hidden;border:3px solid #1c130b;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.re-portrait .glow{position:absolute;inset:0;mix-blend-mode:screen;opacity:.5}
+.re-portrait .mini{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:120px;opacity:.22;line-height:1;pointer-events:none}
+.re-portrait.img-real .mini{display:none}
+.re-title{font-family:'Cinzel',serif;text-align:center;color:var(--sanguine);letter-spacing:.06em;font-size:13px;text-transform:uppercase;margin:2px 0 0}
 .modal ul{padding-left:18px;margin:.3em 0}
 .modal li{margin:.25em 0;font-size:15px}
 
@@ -560,7 +565,7 @@ function markScene(scene){ try{
   if(im.complete) mark();
 }catch(e){} }
 function sceneBg(key,img){ const b=BG[key]||BG.workshop_day; return imgLayer(img||('bg_'+key))+b.g; }
-function cardImg(cd){ if(!cd) return ''; if(cd.rom) return 'card_love_'+((S&&typeof S.pi==='number'?S.pi:0)+1);
+function cardImg(cd){ if(!cd) return ''; if(cd.rom){ const _r=S&&S.loves&&S.museName&&S.loves[S.museName]; return (_r&&_r.key)?_r.key:('card_love_'+((S&&typeof S.pi==='number'?S.pi:0)+1)); }
   const i=(typeof period==='function'&&period().cards)?period().cards.indexOf(cd):-1;
   return i>=0 ? 'card_'+period().id+'_'+(i+1) : ''; }
 
@@ -570,10 +575,11 @@ function cardImg(cd){ if(!cd) return ''; if(cd.rom) return 'card_love_'+((S&&typ
 function bgmTrack(){ return 'leo_music_'+(((S&&typeof S.pi==='number')?S.pi:0)+1)+'.mp3'; }
 function syncBgm(autoplay){
   const a=$('#bgm'); if(!a) return;
+  if(!a.dataset.snd) a.dataset.snd='on';
   const want=bgmTrack();
   const cur=a.getAttribute('src')||'';
   if(!cur.endsWith(want)){ a.setAttribute('src',want); try{a.load();}catch(e){} }
-  if(autoplay){ a.play().catch(()=>{}); }
+  if(autoplay && a.dataset.snd!=='off'){ a.play().catch(()=>{}); }
 }
 
 /* ---- палитры фонов (яркие миниатюры) ----
@@ -622,7 +628,7 @@ const FXNAME={art:'Иск-во',eng:'Инж-я',sci:'Наука',rep:'Пок-л�
 /* имена файлов иллюстраций сюжетных сцен (из текстового справочника) */
 const SCENE_IMG={b_angel:'bg_church',b_shield:'bg_workshop_shield',b_guildtalk:'bg_guild',b_denuncia:'bg_night_1',b_apprentice:'card_apprentice_4',b_father:'bg_guild',b_lute:'bg_tavern',m_letter:'bg_court_milan',m_horse:'bg_studio_milan',m_supper:'bg_refectory',m_invasion:'bg_battlefield',m_court:'card_milan_6',m_canal:'bg_map_room',m_anatomy1:'bg_cell',m_plague:'bg_milan_street',z_michelangelo:'bg_florence_david_0',z_borgia:'bg_map_room',z_flight:'bg_flight',z_mona:'bg_portrait',z_water:'bg_arno_0',z_signoria:'bg_commission',z_isabella:'bg_portrait',z_heart:'bg_anatomy',z_giant:'bg_florence_david',z_machiavelli:'bg_map_room',l_pope:'bg_vatican',l_invite:'bg_amboise',l_france:'bg_amboise',l_legacy:'bg_deluge',l_melzi:'bg_amboise',l_lion:'bg_festival',l_anatomy:'bg_anatomy',l_city:'bg_map_room'};
 /* имена файлов вечерних событий: строка = всегда; объект = по периоду (S.pi), _ = по умолчанию */
-const EVE_IMG={salai:{0:'bg_night_0',1:'bg_salai'},pranks:{0:'bg_workshop_shield'},mirror:{0:'card_apprentice_7',_:'bg_cell'},vegetarian:{0:'bg_garden',1:'bg_garden_0',_:'bg_garden_1'},pigments:'card_apprentice_2',feast:{1:'bg_tavern',2:'bg_tavern_1'},rival:{1:'bg_milan_street',2:'bg_florence_david'},patronmood:{1:'bg_court_milan',_:'bg_court_milan_0'},grotesques:{1:'bg_milan_street',2:'bg_florence_street'},riddles:'card_milan_6',storm:'bg_sky',cat:'bg_workshop_cat',debt:'bg_tavern_0',commission:'bg_commission',books:'bg_cell',mechtoy:'bg_festival',procrast:'bg_night',cadaver:'bg_anatomy',dream:'bg_deluge',hand:'bg_cell',fossils:'bg_arno_1',cart:'bg_festival',mortality:'bg_amboise',kingfriend:'bg_amboise'};
+const EVE_IMG={salai:'bg_salai',lorenzo:'bg_night_0',pranks:{0:'bg_workshop_shield'},mirror:{0:'card_apprentice_7',_:'bg_cell'},vegetarian:{0:'bg_garden',1:'bg_garden_0',_:'bg_garden_1'},pigments:'card_apprentice_2',feast:{1:'bg_tavern',2:'bg_tavern_1'},rival:{1:'bg_milan_street',2:'bg_florence_david'},patronmood:{1:'bg_court_milan',_:'bg_court_milan_0'},grotesques:{1:'bg_milan_street',2:'bg_florence_street'},riddles:'card_milan_6',storm:'bg_sky',cat:'bg_workshop_cat',debt:'bg_tavern_0',debt1:'bg_tavern_0',commission:'bg_commission',books:'bg_cell',mechtoy:'bg_festival',procrast:'bg_night',cadaver:'bg_anatomy',dream:'bg_deluge',hand:'bg_cell',fossils:'bg_arno_1',cart:'bg_festival',mortality:'bg_amboise',kingfriend:'bg_amboise'};
 function eveImg(id,pi){const v=EVE_IMG[id];if(!v)return undefined;if(typeof v==='string')return v;return v[pi]!==undefined?v[pi]:v._;}
 const MONEY_DESC='Флорины. Тратятся на пигменты, книги и причуды, зарабатываются заказами. Предела нет — но и копить трудно.';
 
@@ -640,7 +646,13 @@ const LADY_TAG='портрет · что на миниатюре';
 function E(o){return o;}
 const EVENINGS=[
   /* ——— юность (гаснет к зрелости) ——— */
-  E({id:'salai',tag:[1,2],bg:'night',cap:'Салаи — «дьяволёнок» и любимый воришка — снова что-то прячет за спиной.',
+  E({id:'lorenzo',tag:[1],bg:'night',cap:'Лоренцо ди Креди, младший ученик мастерской, спорит с Леонардо о странной машине из шестерёнок.',
+    text:'<p>Лоренцо появляется у верстака с деревянным колесом и верёвкой.</p><p>«Леонардо, эта штука должна поднимать груз… или она сейчас поднимет в воздух всю мастерскую?»</p>',
+    choices:[
+      {label:'Записать в тетрадь: «Колесо, рычаг, верёвка: сила может иметь обходные пути»',fx:{peace:3},note:'Ты превращаешь спор у верстака в закон механики.'},
+      {label:'Разобрать механизм и помочь Лоренцо собрать его заново',fx:{rep:2,money:-4},note:'Доски, гвозди и испорченная верёвка стоят денег. Даже если это наука.'}
+    ]}),
+  E({id:'salai',tag:[2],bg:'night',cap:'Салаи — «дьяволёнок» и любимый воришка — снова что-то прячет за спиной.',
     text:'<p>Салаи возникает в дверях с подозрительно набитыми карманами и ангельским лицом.</p><p>«Маэстро, я <em>совершенно</em> ничего не брал у того серебряных дел мастера».</p>',
     choices:[
       {label:'Записать в тетрадь: «Салаи — вор, лжец, упрямец, обжора»',fx:{peace:3},note:'Ты ведёшь этот список годами. Он не кончается.'},
@@ -702,7 +714,13 @@ const EVENINGS=[
       {label:'Построить диковину на зависть всем',fx:{eng:4,rep:3,money:-5},note:'Игрушки гения — тоже инженерия.'},
       {label:'Только начертить, сэкономив на постройке',fx:{eng:3,sci:1}}
     ]}),
-  E({id:'debt',tag:[1,2,3],bg:'tavern',cap:'Тусклая комната, строгий взгляд кредитора, длинный свиток счетов.',
+  E({id:'debt1',tag:[1],bg:'tavern',cap:'Тусклая комната, строгий взгляд кредитора, длинный свиток счетов.',
+    text:'<p>Денег, как обычно, нет: всё ушло на пигменты, книги и причуды. Кредитор кашляет многозначительно.</p>',
+    choices:[
+      {label:'Взять быстрый заказ на портрет',fx:{money:8,art:1,peace:-3}},
+      {label:'Занять у Лоренцо',fx:{money:5,rep:-1},note:'У него богатенькие родители.'}
+    ]}),
+  E({id:'debt',tag:[2,3],bg:'tavern',cap:'Тусклая комната, строгий взгляд кредитора, длинный свиток счетов.',
     text:'<p>Денег, как обычно, нет: всё ушло на пигменты, книги и причуды. Кредитор кашляет многозначительно.</p>',
     choices:[
       {label:'Взять быстрый заказ на портрет',fx:{money:8,art:1,peace:-3}},
@@ -847,7 +865,7 @@ const PERIODS=[
         cap:'Дочь аптекаря у прилавка с лазуритом и киноварью.',
         bio:'Торгует пигментами и знает о красках больше иных мастеров. Дразнит тебя за пятна на рукавах.'},
       {name:'Фьоретта',bg:'workshop_day',motif:'🧵',
-        cap:'Швея у окна боттеги: игла, нить, складки ткани, которые так и просятся на рисунок.',
+        cap:'Швея у окна: игла, нить, складки ткани, которые так и просятся на рисунок.',
         bio:'Натурщица и швея с терпением святой. Замирает в позе часами, пока ты ловишь свет на её плече.'},
     ]},
   cards:[
@@ -920,14 +938,14 @@ const PERIODS=[
     pay:'Вечера уходят на беседы и стихи, а не на шестерёнки для придворного празднества. <em>Механический рай так и не взлетит.</em>',
     ladies:[
       {name:'Чечилия Галлерани',bg:'studio_milan',motif:'🪶',
-        cap:'Юная Чечилия с белым горностаем на руках; умна, пишет стихи, смотрит насмешливо.',
+        cap:'Юная Чечилия с белым горностаем на руках – умна, пишет стихи, глядит насмешливо.',
         bio:'Фаворитка Моро и образованнейшая дама двора. Спорит с тобой о душе, свете и о том, может ли машина мыслить.'},
       {name:'Лукреция Кривелли',bg:'court_milan',motif:'🎵',
-        cap:'Придворная певица у клавесина; свеча, ноты, опущенные ресницы.',
-        bio:'Голос, от которого затихает зал. Ещё одна звезда двора Сфорца — и ещё один невозможный для художника роман.'},
+        cap:'Придворная певица у клавесина – всегда при элегантном наряде и с опущенными ресницами.',
+        bio:'Голос, от которого затихает зал. Ещё одна яркая звезда двора Сфорца.'},
       {name:'Изабелла',bg:'court_milan',motif:'💎',
         cap:'Заезжая маркиза в роскошном платье разглядывает твои наброски с видом знатока.',
-        bio:'Ценительница искусства и коллекционерка. Требует свой портрет годами — и не получит, как все они.'},
+        bio:'Ценительница искусства и коллекционерка. Требует свой портрет — и побыстрее.'},
     ]},
   cards:[
     {ic:'✏️',cn:'Этюды и портреты',cd:'Свет, тени, сфумато.',bg:'studio_milan',fx:{art:5,sci:1}},
@@ -1008,17 +1026,17 @@ const PERIODS=[
     pay:'Ты отказываешься ехать в Романью к жестокому Борджиа — слишком много крови, слишком мало смысла. <em>Карты останутся ненарисованными.</em>',
     ladies:[
       {name:'Лиза',bg:'portrait',motif:'🙂',
-        cap:'Модель в кресле под мягкий звук лютни; тень улыбки, которую невозможно закончить.',
-        bio:'Жена торговца шёлком, чью улыбку ты ловишь слоями дымки. Ты не отдашь её портрет — никогда.'},
+        cap:'Модель в кресле с тенью улыбки, которую невозможно уловить.',
+        bio:'Жена торговца шёлком, чью улыбку ты пишешь слоями дымки. Ты уже понял, что не отдашь её портрет — даже если ещё не написал.'},
       {name:'Костанца',bg:'garden',motif:'📜',
-        cap:'Поэтесса с книгой в саду; ветер листает страницы, она читает тебе вслух.',
+        cap:'Поэтесса с книгой в саду – ветер листает страницы, она читает тебе вслух.',
         bio:'Слагает сонеты и спорит с тобой о том, что выше — слово или образ. Опасно умна.'},
       {name:'Джиневра',bg:'florence_street',motif:'💠',
-        cap:'Дочь банкира у лоджии; жемчуг, бледность, взгляд поверх веера.',
-        bio:'Богата, сдержанна, окружена женихами. Заказать у тебя портрет — почти признание.'},
+        cap:'Дочь банкира из великосветской лоджии – украшена жемчугом и бледностью.',
+        bio:'Богата, сдержанна, окружена женихами. Заказать у тебя портрет — для неё почти признание.'},
       {name:'Незнакомка',bg:'portrait',motif:'🌗',
-        cap:'Дама под вуалью, чьего имени не знает никто; та самая полуулыбка.',
-        bio:'Появляется на сеансы и исчезает. Возможно, её не существует. Возможно, она — само искусство.'},
+        cap:'Дама под вуалью, чьего имени не знает никто.',
+        bio:'Появляется внезапно и также внезапно исчезает. Возможно, её не существует. Возможно, она — само искусство.'},
     ]},
   cards:[
     {ic:'🖌️',cn:'Писать сфумато',cd:'Дымка, переходы, живая плоть.',bg:'portrait',fx:{art:5,sci:2,peace:-2}},
@@ -1086,13 +1104,13 @@ const PERIODS=[
         cap:'Юный Франческо Мельци держит кисть, когда дрожит твоя рука, и записывает каждое слово.',
         bio:'Не пылкая страсть, а тихая преданность ученика, что не отходит от тебя. Покой, которого ты искал всю жизнь.'},
       {name:'Маргарита',bg:'amboise',motif:'⚜️',
-        cap:'Придворная дама короля у камина; французская речь, мягкая улыбка, гобелены.',
-        bio:'Дама двора Франциска, что слушает твои истории об Италии часами. Тепло чужбины.'},
+        cap:'Придворная дама короля у камина.',
+        bio:'Дама двора Франциска, что слушает твои истории об Италии часами.'},
       {name:'Вдова виноградаря',bg:'garden',motif:'🍇',
-        cap:'Спокойная женщина среди лоз, что приносит тебе вино и тишину сада.',
+        cap:'Спокойная женщина среди лоз, приносит тебе вино и тишину сада.',
         bio:'Никаких портретов и стихов — просто хлеб, вино и покой под французским солнцем.'},
       {name:'Дама в синем',bg:'amboise',motif:'🔷',
-        cap:'Модель в ультрамариновом платье у окна; последний портрет, что ты задумал.',
+        cap:'Модель в ультрамариновом платье у окна – последний портрет, что ты задумал.',
         bio:'Загадочная гостья Амбуаза, чей образ ты хочешь успеть запечатлеть. Время, увы, на исходе.'},
       {name:'Сестра милосердия',bg:'cell',motif:'🕊️',
         cap:'Тихая сиделка с лампадой у постели; забота без слов в последние годы.',
@@ -1405,7 +1423,7 @@ function newState(){
   return {pi:0,day:1,stats:{art:8,eng:6,sci:8,rep:6},peace:60,money:25,
     ach:new Set(),lost:new Set(),flags:new Set(),lateAch:new Set(),
     cardCount:{},
-    museName:null,
+    museName:null, loves:{}, anchorName:null,
     rom:{qShown:0,active:false,meter:0,paid:false,resolved:false},
     romDays:[],storyPlan:{},heldBeats:[],
     bonusSlots:0,recentEve:[]};
@@ -1465,7 +1483,7 @@ function renderShell(){
   const SND_OFF='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h3.5L13 19V5L7.5 9H4z"/><path d="M22 9.5l-5 5"/><path d="M17 9.5l5 5"/></svg>';
   const bMute=el('button','tbtn ico');
   const setSnd=on=>{ bMute.innerHTML=on?SND_ON:SND_OFF; bMute.classList.toggle('snd-off',!on); bMute.title=on?'Музыка включена — нажмите, чтобы выключить':'Музыка выключена — нажмите, чтобы включить'; };
-  { const a=$('#bgm'); setSnd(!!(a && a.dataset.snd==='on')); }
+  { const a=$('#bgm'); if(a && !a.dataset.snd)a.dataset.snd='on'; setSnd(!(a && a.dataset.snd==='off')); }
   bMute.onclick=()=>{const a=$('#bgm');if(!a)return;const on=a.dataset.snd!=='on';a.dataset.snd=on?'on':'off';if(on){a.play().catch(()=>{});}else{a.pause();}setSnd(on);};
   tools.append(bAch,bHelp,bMute);
   row2.appendChild(tools);
@@ -1763,7 +1781,7 @@ function showLadies(){
     const stage=el('div','swiper-stage');
     const prev=el('button','arrowbtn','◀'); prev.disabled=idx===0; prev.onclick=()=>{idx--;render();};
     const next=el('button','arrowbtn','▶'); next.disabled=idx===slides.length-1; next.onclick=()=>{idx++;render();};
-    const card=el('div','lady-card'+(s.devote?' devote':'')); card.style.background=imgLayer(portraitImg)+bg.g;
+    const card=el('div','lady-card'+(s.devote?' devote':'')); card.style.background=imgLayer(portraitImg)+bg.g; markScene(card);
     card.innerHTML=`<span class="glow"></span><span class="frame"></span>
       <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
       <span class="mini">${s.motif||bg.motif}</span>
@@ -1783,7 +1801,7 @@ function showLadies(){
       acts.appendChild(dec);
     } else {
       const pick=el('button','btn','Это она ❤ — открыть сердечную линию');
-      pick.onclick=()=>chooseLady(s.name);
+      pick.onclick=()=>chooseLady(s.name, portraitImg);
       acts.appendChild(pick);
       if(S.museName){
         const faith=el('button','choice',`Остаться верным своей любви («${S.museName}»)<span class="ce">Продолжить прежнее чувство — та же цена свершения.</span>`);
@@ -1799,8 +1817,12 @@ function showLadies(){
   };
   render();
 }
-function chooseLady(name){
+function chooseLady(name,key){
   S.rom.active=true; S.rom.resolved=true; S.rom.meter+=1; S.museName=name;
+  S.loves=S.loves||{};
+  const _rec=S.loves[name]||{key:null,first:S.pi,count:0};
+  if(key)_rec.key=key; _rec.last=S.pi; _rec.count=(_rec.count||0)+1;
+  S.loves[name]=_rec; S.anchorName=name;
   toast('❤','Сердечная линия','Избрана: '+name);
   planner();
 }
@@ -2246,7 +2268,9 @@ function epilogue(){
   about.onclick=()=>cinematic(aboutScreen);
   const book=el('button','btn ghost','📖 Открыть книгу свершений');
   book.onclick=openBook;
-  bar.append(book,about);
+  const romBtn=el('button','btn','💗 Романтичная концовка');
+  romBtn.onclick=openRomanticEnding;
+  bar.append(book,romBtn,about);
   c.appendChild(bar);
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2396,6 +2420,40 @@ function reqChips(req,flag){
   if(flag) html+=`<span class="rqchip ${S.flags.has(flag)?'met':''}">📜 сюжетный выбор</span>`;
   return html;
 }
+function romanticEnding(){
+  const loves=S.loves||{}, names=Object.keys(loves), distinct=names.length;
+  const active=!!(S.rom&&S.rom.active&&S.museName&&loves[S.museName]);
+  const anchor=active?loves[S.museName]:null, aKey=anchor?anchor.key:null;
+  const T={none:'Ты всякий раз выбирал тетрадь, а не объятия, и оставался один. Кто-то назвал бы это одиночеством — ты звал это свободой. Ни одна женщина не вошла в твою книгу свершений и не отняла у мира ни единого открытия. И всё же поздними вечерами, глядя в огонь, ты иногда думал: а что если бы я подошёл к той прекрасной девушке у реки?',first:'С боттеги Верроккьо и до тихих комнат Амбуаза рядом была твоя первая любовь. Города менялись, покровители возносились и падали, замыслы рассыпались и рождались вновь, а она сияла, как звезда над всеми твоими картами. Великому делу ты отдал не всё: часть сердца всю жизнь принадлежала ей — и, может быть, поэтому жизнь вышла не только великой, но и счастливой.',mona:'Из всех лиц, что ты ловил кистью, лишь одно не отдал никому. Лиза осталась с тобой на маленькой доске, которую ты возил из Флоренции в Рим и за Альпы, добавляя дымку слой за слоем до конца. Может, ты любил не женщину, а только улыбку. Но эту улыбку ты сберёг навсегда и для целого мира.',happy:'Ты не разбрасывал сердце по дворам и городам — ты нашёл любимую и остался с ней до конца. Годы, что другие тратят на новые увлечения, вы прожили вместе: в спорах, в тишине, в вечерах у свечи. Она не отняла у мира твоих открытий — она стала тихой гаванью, к которой ты возвращался после каждой бури мысли. Великая жизнь разделена на двоих.',tragic:'Судьба оказалась не на вашей стороне. Чужие браки, расстояния, война, болезни — мир будто нарочно вставал между вами. Ты пережил эту любовь, как переживают утрату части себя: молча, даже не перенося боль на бумагу. В твоих поздних вихрях воды, что рушится и рождается вновь, есть и она — та, которую нельзя удержать.',fleeting:'Лишь однажды ты позволил сердцу взять верх над тетрадью: это были несколько украденных у труда вечеров. А потом дорога позвала громче, и ты ушёл в неё, не оглядываясь. Ты вспоминал её редко — но позже искал её взгляд в каждой модели.',casanova:'Флоренция, Милан, Романья, Амбуаз — в каждом городе тебя ждала новая дама. Ты влюблялся в их черты так же, как в изгиб реки или полёт стрижа, — страстно и ненадолго. В тетрадях осталась галерея улыбок, но ни под одной нет имени, выведенного дважды. Гений редко бывает верен кому-то, кроме собственного любопытства.',trace:'Любовь оставила на тебе след. Ты встречался с дамами, но никогда не злоупотреблял ими. Они приносили тебе вдохновение и улыбку, но ничто так не слепило твою душу, как жажда знаний.'};
+  if(distinct===0) return {title:'Без любви',img:'choice_devote',text:T.none};
+  if(distinct>=3) return {title:'Ловелас',img:'heart_1',text:T.casanova};
+  if(active){
+    if((aKey==='lady_apprentice_1'||aKey==='lady_apprentice_2')&&distinct===1&&anchor.count>=4) return {title:'Первая любовь',img:aKey,text:T.first};
+    if(aKey==='lady_maturity_1') return {title:'Мона Лиза',img:aKey,text:T.mona};
+    if(aKey==='lady_milan_3'||aKey==='lady_maturity_2'||aKey==='lady_late_3') return {title:'Долго и счастливо',img:aKey,text:T.happy};
+    if(aKey==='lady_milan_2'||aKey==='lady_maturity_3') return {title:'Трагическая любовь',img:aKey,text:T.tragic};
+    if(distinct===1&&anchor.count>=2) return {title:'Долго и счастливо',img:aKey||'choice_devote',text:T.happy};
+  }
+  if(distinct===1){ const only=loves[names[0]]; if(only.key!=='lady_late_3') return {title:'Мимолётное увлечение',img:only.key||'choice_devote',text:T.fleeting}; }
+  return {title:'След любви',img:'heart_2',text:T.trace};
+}
+function openRomanticEnding(){
+  const e=romanticEnding();
+  const scrim=el('div','scrim');
+  scrim.onclick=ev=>{if(ev.target===scrim)scrim.remove();};
+  const m=el('div','modal');
+  m.appendChild(el('h2',null,'Романтичная концовка'));
+  m.appendChild(el('div','re-title',e.title));
+  const port=el('div','re-portrait'); port.style.background=imgLayer(e.img)+((BG.portrait&&BG.portrait.g)||BG.workshop_day.g); markScene(port);
+  port.innerHTML='<span class="glow"></span><span class="mini">💗</span>';
+  m.appendChild(port);
+  m.appendChild(el('div','prose',`<p>${e.text}</p>`));
+  const close=el('button','btn close','Вернуться');
+  close.onclick=()=>scrim.remove();
+  m.appendChild(close);
+  scrim.appendChild(m);
+  document.body.appendChild(scrim);
+}
 function openLightbox(d){
   const bg=BG[d.bg]||BG.workshop_day;
   const scrim=el('div','scrim lightbox');
@@ -2517,7 +2575,7 @@ function serializeS(s){
   return JSON.stringify({ _v:SAVE_VER,
     pi:s.pi, day:s.day, stats:s.stats, peace:s.peace, money:s.money,
     ach:[...s.ach], lost:[...s.lost], flags:[...s.flags], lateAch:[...(s.lateAch||[])],
-    cardCount:s.cardCount, museName:s.museName, rom:s.rom,
+    cardCount:s.cardCount, museName:s.museName, rom:s.rom, loves:s.loves, anchorName:s.anchorName,
     romDays:s.romDays, storyPlan:s.storyPlan, heldBeats:s.heldBeats||[], bonusSlots:s.bonusSlots, recentEve:s.recentEve });
 }
 function saveProgress(){
@@ -2533,7 +2591,7 @@ function loadProgress(){
     const s=newState();
     Object.assign(s, o);
     s.ach=new Set(o.ach||[]); s.lost=new Set(o.lost||[]); s.flags=new Set(o.flags||[]); s.lateAch=new Set(o.lateAch||[]);
-    s.rom=o.rom||s.rom; s.cardCount=o.cardCount||{}; s.storyPlan=o.storyPlan||{}; s.heldBeats=o.heldBeats||[];
+    s.rom=o.rom||s.rom; s.loves=o.loves||{}; s.anchorName=o.anchorName||null; s.cardCount=o.cardCount||{}; s.storyPlan=o.storyPlan||{}; s.heldBeats=o.heldBeats||[];
     s.romDays=o.romDays||[]; s.recentEve=o.recentEve||[];
     return s;
   }catch(e){ return null; }             // битый JSON — трактуем как «нет сохранения»
